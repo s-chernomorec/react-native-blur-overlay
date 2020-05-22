@@ -8,7 +8,7 @@ var iface = {
     name: 'BlurView',
     propTypes: {
         ...View.propTypes,
-        brightness: PropTypes.any,
+        colorMatrix: PropTypes.arrayOf(PropTypes.number),
         radius: PropTypes.number,
         downsampling: PropTypes.number,
         blurStyle: PropTypes.string,

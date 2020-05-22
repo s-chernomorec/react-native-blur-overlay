@@ -88,7 +88,12 @@ export default class App extends Component<Props> {
                 <BlurOverlay
                     radius={14}
                     downsampling={2}
-                    brightness={-200}
+                    colorMatrix={[
+                        1, 0, 0, 0, 0,
+                        0, 1, 0, 0, 0,
+                        0, 0, 1, 0, 0,
+                        0, 0, 0, 1, 0
+                    ]}
                     onPress={() => {
                         closeOverlay();
                     }}
@@ -135,7 +140,7 @@ const styles = StyleSheet.create({
 android only:
   radius : Int (Between  0 to 25*downsampling)
   downsampling : float (>= 1)
-  brightness : float (Between -255 to 255 , 0 = nochange)
+  colorMatrix : https://developer.android.com/reference/android/graphics/ColorMatrix
   
 ios only : 
   blurStyle: string ("light" , "extraLight" , "dark")

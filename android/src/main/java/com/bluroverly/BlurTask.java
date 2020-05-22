@@ -27,9 +27,9 @@ public class BlurTask extends AsyncTask<Void, Void, Drawable> {
             Bitmap b1,
             int radius,
             float factor,
-            float brightness) {
+            float[] colorMatrix) {
         try {
-            b1 = blur(rs,b1,radius, brightness,factor);
+            b1 = blur(rs, b1, radius, colorMatrix, factor);
             return new BitmapDrawable(reactContext.getResources(),b1);
         } catch (Exception e) {
             e.printStackTrace();
@@ -42,10 +42,10 @@ public class BlurTask extends AsyncTask<Void, Void, Drawable> {
      * @param rs RenderScript Context
      * @param image screenshot bitmap
      * @param Radius integer between 1 to 24
-     * @param brightness -255..255 0 is default
+     * @param colorMatrix color matrix array
      * @return blurred Bitmap
      */
-    private static Bitmap blur(RenderScript rs, Bitmap image, int Radius, float brightness, float factor) {
+    private static Bitmap blur(RenderScript rs, Bitmap image, int Radius, float[] colorMatrix, float factor) {
         Bitmap outputBitmap;
         if(Radius > 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             outputBitmap = Bitmap.createBitmap(image.getWidth(),image.getHeight(), Bitmap.Config.ARGB_8888);
@@ -59,19 +59,13 @@ public class BlurTask extends AsyncTask<Void, Void, Drawable> {
         } else {
             outputBitmap = image;
         }
-        if(brightness!=0){
-            ColorMatrix cm = new ColorMatrix(new float[]
-                    {
-                            (float) 1, 0, 0, 0, brightness,
-                            0, (float) 1, 0, 0, brightness,
-                            0, 0, (float) 1, 0, brightness,
-                            0, 0, 0, 1, 0
-                    });
-            Canvas canvas = new Canvas(outputBitmap);
-            Paint paint = new Paint();
-            paint.setColorFilter(new ColorMatrixColorFilter(cm));
-            canvas.drawBitmap(outputBitmap, 0, 0, paint);
-        }
+
+        ColorMatrix cm = new ColorMatrix(colorMatrix);
+        Canvas canvas = new Canvas(outputBitmap);
+        Paint paint = new Paint();
+        paint.setColorFilter(new ColorMatrixColorFilter(cm));
+        canvas.drawBitmap(outputBitmap, 0, 0, paint);
+
         return outputBitmap;
     }
     private WeakReference<View> view;
@@ -80,16 +74,16 @@ public class BlurTask extends AsyncTask<Void, Void, Drawable> {
     private WeakReference<RenderScript> rs;
     private float factor;
     private int radius;
-    private float brightness;
+    private float[] colorMatrix;
     private Bitmap b1;
     // only retain a weak reference to the activity
-    BlurTask(View view, ReactApplicationContext ctx, RenderScript rs, Activity activity, int radius, float factor, float brightness ) {
+    BlurTask(View view, ReactApplicationContext ctx, RenderScript rs, Activity activity, int radius, float factor, float[] colorMatrix) {
         this.view = new WeakReference<>(view);
         this.activity = new WeakReference<>(activity);
         this.ctx = new WeakReference<>(ctx);
         this.factor = factor;
         this.radius = radius;
-        this.brightness = brightness;
+        this.colorMatrix = colorMatrix;
         this.rs = new WeakReference<>(rs);
     }
 
@@ -106,7 +100,7 @@ public class BlurTask extends AsyncTask<Void, Void, Drawable> {
     }
 
     protected Drawable doInBackground(Void... param) {
-        return screenShot(ctx.get(),rs.get(),b1,radius,factor,brightness);
+        return screenShot(ctx.get(),rs.get(),b1,radius,factor,colorMatrix);
     }
 
     protected void onPostExecute(final Drawable result) {
